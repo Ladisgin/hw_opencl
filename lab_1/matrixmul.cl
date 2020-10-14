@@ -1,8 +1,8 @@
 kernel void matrix_mul(global const float *a, global const float *b, global float *c, uint N, uint K, uint M) {
     const int row = get_local_id(0);
     const int col = get_local_id(1);
-    const int i = get_global_id(0); // 0..N
-    const int j = get_global_id(1); // 0..M
+    const int i = get_global_id(0);
+    const int j = get_global_id(1);
 
     local float local_a[TS][TS];
     local float local_b[TS][TS];
@@ -17,9 +17,13 @@ kernel void matrix_mul(global const float *a, global const float *b, global floa
         local_a[col][row] = a[i * K + tiled_col];
         local_b[col][row] = b[tiled_row * M + j];
 
+        barrier(CLK_LOCAL_MEM_FENCE);
+
         for (uint k = 0; k < TS; k++) {
             t += local_a[k][row] * local_b[col][k];
         }
+
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
     c[i * M + j] = t;
 }
