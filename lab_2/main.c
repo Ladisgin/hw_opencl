@@ -289,6 +289,7 @@ int main() {
             double opencl_t_f = opencl_t * 1.0 / 1e9;
             printf("openCL: %0.5lf s\n", opencl_t_f);
         }
+        free(prog_str);
     }
 
     free(arr);
