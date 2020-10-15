@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(lab_2 C)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 find_package(OpenCL REQUIRED)

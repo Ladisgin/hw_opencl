@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 #ifdef __APPLE__
 
@@ -20,6 +21,10 @@
 
 char *read_program(size_t *sz) {
     FILE *f = fopen("../prefsum.cl", "rb");
+    if (f == NULL) {
+        *sz = 0;
+        return (char*) NULL;
+    }
     fseek(f, 0L, SEEK_END);
     *sz = ftell(f);
     fseek(f, 0, SEEK_SET);
@@ -114,13 +119,13 @@ cl_device_id get_device() {
     return resultDevice;
 }
 
-int verify_result(const float *arr, const float *result, size_t n) {
+bool verify_result(const float *arr, const float *result, size_t n) {
     for (size_t i = 1; i < n; ++i) {
         if (fabs((result[i - 1] + arr[i]) / result[i] - 1) > DELTA) {
-            return 0;
+            return false;
         }
     }
-    return 1;
+    return true;
 }
 
 cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_id device) {
@@ -151,6 +156,8 @@ cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_
             sprintf(options, "-D TS=%d", TS);
 
             cl_int prog_ret = clBuildProgram(prog, 1, &device, options, NULL, NULL);
+
+            free(str);
 
             printf("build program: ");
             if (prog_ret != CL_SUCCESS) {
