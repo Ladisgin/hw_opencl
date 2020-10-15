@@ -158,6 +158,7 @@ cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_
             cl_int prog_ret = clBuildProgram(prog, 1, &device, options, NULL, NULL);
 
             free(str);
+            free(options);
 
             printf("build program: ");
             if (prog_ret != CL_SUCCESS) {
