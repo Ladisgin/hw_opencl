@@ -128,7 +128,7 @@ bool verify_result(const float *arr, const float *result, size_t n) {
     return true;
 }
 
-cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_id device) {
+cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_id device, char* prog_str) {
     cl_int errcode_ret;
     *context = clCreateContext(NULL, 1, &device, NULL, NULL, &errcode_ret);
 
@@ -147,9 +147,9 @@ cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_
             printf("ok\n");
 
             size_t sz;
-            char *str = read_program(&sz);
+            prog_str = read_program(&sz);
 
-            cl_program prog = clCreateProgramWithSource(*context, 1, &str, &sz, &errcode_ret);
+            cl_program prog = clCreateProgramWithSource(*context, 1, &prog_str, &sz, &errcode_ret);
 
             char *options = (char *) malloc(64 * sizeof(char));
 
@@ -157,7 +157,6 @@ cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_
 
             cl_int prog_ret = clBuildProgram(prog, 1, &device, options, NULL, NULL);
 
-            free(str);
             free(options);
 
             printf("build program: ");
@@ -267,7 +266,8 @@ int main() {
         printf("ok\n");
         cl_context context;
         cl_command_queue queue;
-        cl_kernel kernel = create_kernel(&context, &queue, device);
+        char *prog_str;
+        cl_kernel kernel = create_kernel(&context, &queue, device, prog_str);
         if (kernel != (cl_kernel) -1) {
             cl_long opencl_t = calculate(kernel, queue, context, arr, result, n);
 
