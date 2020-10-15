@@ -4,7 +4,9 @@
 #include <math.h>
 
 #ifdef __APPLE__
+
 #include <OpenCL/opencl.h>
+
 #else
 #include <CL/opencl.h>
 #endif
@@ -12,7 +14,7 @@
 #include <time.h>
 
 #define N 1024*1024
-#define TS 128
+#define TS 256
 #define FUNCTION_NAME "pref_sum"
 #define DELTA log2(N)
 
@@ -114,13 +116,14 @@ cl_device_id get_device() {
 
 bool verify_result(const float *arr, const float *result, size_t n) {
     float t = 0.0f;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         t += arr[i];
-        if (fabs((t - result[i]) > DELTA)) {
+        if (fabs(t - result[i]) > DELTA) {
             printf("verify result: %f\nresult: %f\nstep: %d\n", t, result[i], i);
             return false;
         }
     }
+    printf("verify result last: %f\nopencl result last: %f\n", t, result[n - 1]);
     return true;
 }
 
@@ -244,13 +247,13 @@ int main() {
     cl_float *arr = (cl_float *) malloc(sizeof(cl_float) * n);
     cl_float *result = (cl_float *) malloc(sizeof(cl_float) * n);
 
-    for(size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         result[i] = 0;
     }
 
     srand(time(NULL));
     for (size_t i = 0; i < n; i++) {
-        arr[i] = rand() % 100 + 1;
+        arr[i] = (rand() % 20);
     }
 
     cl_device_id device = get_device();
@@ -270,6 +273,7 @@ int main() {
             }
 
             int verify_res = verify_result(arr, result, n);
+
             if (verify_res) {
                 printf("check: ok\n");
             } else {

@@ -34,6 +34,7 @@ kernel void pref_sum(global const float *arr, global float *result, uint N) {
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
+
         result[t * TS + id] = sum;
         if (last) {
             result[t * TS + id] += buffer_2[id];
