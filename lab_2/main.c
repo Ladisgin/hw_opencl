@@ -14,7 +14,7 @@
 
 #include <time.h>
 
-#define N 1024*1024
+#define N 1024*1024*128
 #define TS 256
 #define FUNCTION_NAME "pref_sum"
 #define DELTA 6e-7
@@ -212,7 +212,7 @@ cl_ulong calculate(cl_kernel kernel, cl_command_queue queue, cl_context context,
             } else {
                 size_t *global = (size_t *) malloc(sizeof(size_t));
                 size_t *local = (size_t *) malloc(sizeof(size_t));
-                global[0] = N;
+                global[0] = TS;
                 local[0] = TS;
 
                 cl_event event;
