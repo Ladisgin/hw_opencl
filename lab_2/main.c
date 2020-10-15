@@ -16,7 +16,7 @@
 #define N 1024*1024
 #define TS 256
 #define FUNCTION_NAME "pref_sum"
-#define DELTA log2(N)
+#define DELTA 6e-7
 
 char *read_program(size_t *sz) {
     FILE *f = fopen("../prefsum.cl", "rb");
@@ -115,15 +115,11 @@ cl_device_id get_device() {
 }
 
 bool verify_result(const float *arr, const float *result, size_t n) {
-    float t = 0.0f;
-    for (size_t i = 0; i < n; ++i) {
-        t += arr[i];
-        if (fabs(t - result[i]) > DELTA) {
-            printf("verify result: %f\nresult: %f\nstep: %d\n", t, result[i], i);
+    for (size_t i = 1; i < n; ++i) {
+        if (fabs((result[i - 1] + arr[i]) / result[i] - 1) > DELTA) {
             return false;
         }
     }
-    printf("verify result last: %f\nopencl result last: %f\n", t, result[n - 1]);
     return true;
 }
 
@@ -253,7 +249,7 @@ int main() {
 
     srand(time(NULL));
     for (size_t i = 0; i < n; i++) {
-        arr[i] = (rand() % 20);
+        arr[i] = (float) ((double) rand() / (double) (RAND_MAX));
     }
 
     cl_device_id device = get_device();
