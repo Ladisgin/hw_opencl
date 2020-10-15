@@ -12,7 +12,7 @@ kernel void pref_sum(global const float *arr, global float *result, uint N) {
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        bool last = false;
+        int last = 0;
 
         for (size_t i = 1, t = 0; i < TS; i <<= 1, t++) {
             if (t & 1) {
@@ -21,14 +21,14 @@ kernel void pref_sum(global const float *arr, global float *result, uint N) {
                 } else {
                     buffer_1[id] = buffer_2[id] + buffer_2[id - i];
                 }
-                last = false;
+                last = 0;
             } else {
                 if(id < i){
                     buffer_2[id] = buffer_1[id];
                 } else {
                     buffer_2[id] = buffer_1[id] + buffer_1[id - i];
                 }
-                last = true;
+                last = 1;
             }
 
             barrier(CLK_LOCAL_MEM_FENCE);
