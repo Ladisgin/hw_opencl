@@ -196,7 +196,7 @@ long long verify_result_openmp(const cl_float *a, const cl_float *b, const cl_fl
 }
 
 cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_id device) {
-    cl_int errcode_ret = malloc(sizeof(cl_int));
+    cl_int errcode_ret;
     *context = clCreateContext(NULL, 1, &device, NULL, NULL, &errcode_ret);
 
     printf("create context: ");

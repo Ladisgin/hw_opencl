@@ -12,9 +12,9 @@
 #include <time.h>
 
 #define N 1024*1024
-#define TS 64
+#define TS 128
 #define FUNCTION_NAME "pref_sum"
-#define DELTA 1e-10
+#define DELTA log2(N)
 
 char *read_program(size_t *sz) {
     FILE *f = fopen("../prefsum.cl", "rb");
@@ -112,19 +112,20 @@ cl_device_id get_device() {
     return resultDevice;
 }
 
-int verify_result(const float *arr, const float *result, int n) {
+bool verify_result(const float *arr, const float *result, size_t n) {
     float t = 0.0f;
-    for (size_t i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         t += arr[i];
-        if (t != result[i]) {
-            return -1;
+        if (fabs((t - result[i]) > DELTA)) {
+            printf("verify result: %f\nresult: %f\nstep: %d\n", t, result[i], i);
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
 cl_kernel create_kernel(cl_context *context, cl_command_queue *queue, cl_device_id device) {
-    cl_int errcode_ret = malloc(sizeof(cl_int));
+    cl_int errcode_ret;
     *context = clCreateContext(NULL, 1, &device, NULL, NULL, &errcode_ret);
 
     printf("create context: ");
@@ -184,7 +185,7 @@ cl_ulong calculate(cl_kernel kernel, cl_command_queue queue, cl_context context,
     cl_int arr_err, result_err;
 
     cl_mem buf_arr = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_float) * n, NULL, &arr_err);
-    cl_mem buf_result = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * n, NULL, &result_err);
+    cl_mem buf_result = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_float) * n, NULL, &result_err);
 
     if (arr_err != CL_SUCCESS || result_err != CL_SUCCESS) {
         printf("create buffer error: arr)%d, result)%d\n", arr_err, result_err);
@@ -243,9 +244,13 @@ int main() {
     cl_float *arr = (cl_float *) malloc(sizeof(cl_float) * n);
     cl_float *result = (cl_float *) malloc(sizeof(cl_float) * n);
 
+    for(size_t i = 0; i < n; i++){
+        result[i] = 0;
+    }
+
     srand(time(NULL));
     for (size_t i = 0; i < n; i++) {
-        arr[i] = rand() % 100;
+        arr[i] = rand() % 100 + 1;
     }
 
     cl_device_id device = get_device();
@@ -277,6 +282,7 @@ int main() {
             printf("openCL: %0.5lf s\n", opencl_t_f);
         }
     }
+
     free(arr);
     free(result);
     return 0;
